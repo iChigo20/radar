@@ -3,6 +3,7 @@ package com.pgmmers.radar.service.engine;
 import com.alibaba.fastjson.JSONObject;
 import com.pgmmers.radar.service.engine.vo.Location;
 
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -60,6 +61,14 @@ public interface PluginService {
      * @author feihu.wang
      */
      String formatDate(Long timeMills, String format);
+
+    /**
+     *  loading data from PostgreSQL.
+     * @param quest
+     * @return
+     * @author li
+     */
+    String pgGet(String quest);
 
     /**
      * http util.

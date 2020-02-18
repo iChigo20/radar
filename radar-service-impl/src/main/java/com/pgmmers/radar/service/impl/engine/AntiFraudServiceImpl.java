@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -101,7 +102,7 @@ public class AntiFraudServiceImpl implements AntiFraudService {
     }
 
     @Override
-    public Map<String, Object> prepare(Long modelId, Map<String, Object> jsonInfo) {
+    public Map<String, Object> prepare(Long modelId, Map<String, Object> jsonInfo){
         List<PreItemVO> preItemList = preItemService.listPreItem(modelId);
         Map<String, Object> result = new HashMap<>();
         for (PreItemVO item : preItemList) {
@@ -142,13 +143,17 @@ public class AntiFraudServiceImpl implements AntiFraudService {
                 millis = Long.parseLong(jsonInfo.get(sourceField[0]).toString());
                 transfer = pluginService.formatDate(millis, formatStr);
                 break;
-            case HTTP_UTIL:
+            case DATALOAD:
+                String quest = item.getArgs();
+                transfer = pluginService.pgGet(quest);
+                break;
+            case MUTI_DATA:
                 String  url = item.getArgs();
                 String  reqType = item.getReqType();
                 String arg = jsonInfo.get(sourceField[0]).toString();
                 transfer = pluginService.httpRequest(url, reqType, arg);
                 break;
-            default:
+                default:
 
             }
             result.put(item.getDestField(), transfer);

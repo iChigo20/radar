@@ -24,7 +24,7 @@ export default class AddPreItem extends React.Component{
 			status:1,
 			args:'',
 			reqType:'GET',
-			configJson:JSON.stringify({})
+			configJson:null
 		}
 	}
 
@@ -44,9 +44,9 @@ export default class AddPreItem extends React.Component{
     	if(name=='plugin'){
     		state['sourceField']='';
     		state['sourceLabel']='';
-				state['args']='';
-				state['status']=1;
-				state['configJson']= JSON.stringify({});
+    		state['args']='';
+    		state['status']=1;
+    		state['configJson']= JSON.stringify({});
     	}   	
         state[name] = trim(value);
 
@@ -88,9 +88,9 @@ export default class AddPreItem extends React.Component{
 	}
 
 	handleSubmit=(validated)=>{
-		if(typeof JSON.parse(this.state.configJson)!='object'){
-		 return	message.error('多文本框json格式不对');
-		}
+		// if(!this.state.configJson || typeof JSON.parse(this.state.configJson)!='object'){
+		//  return	message.error('多文本框json格式不对');
+		// }
 		if(!validated){
 			Modal.error({
 			    title: '提交失败',
@@ -108,7 +108,13 @@ export default class AddPreItem extends React.Component{
 					param.status=this.state.status;
 					param.reqType=this.state.reqType;
 					param.args=this.state.args;
-					param.configJson=JSON.parse(this.state.configJson);
+					// param.configJson=JSON.parse(this.state.configJson);
+			if (this.state.configJson) {
+				if (typeof this.state.configJson != 'object') {
+					return message.error('多文本框json格式不对');
+				}
+				param.configJson =this.state.configJson;
+			}
 			FetchUtil('/preitem/','PUT', JSON.stringify(param),
 		    	(data) => {
 		    		if(data.success){
@@ -287,8 +293,20 @@ export default class AddPreItem extends React.Component{
 		                            </Tooltip>
                             	</Col>
                             </Row>
-	                    </FormItem>  
-	                    <FormItem required={true} {...formItemLayout} label="请求信息" style={plugin=='HTTP_UTIL'?{}:{display:"none"}} help={validate.args.help} validateStatus={validate.args.status}>
+	                    </FormItem>
+						<FormItem required={true} {...formItemLayout} label="查询信息" style={plugin=='DATALOAD'?{}:{display:"none"}} help={validate.args.help} validateStatus={validate.args.status}>
+							<Row>
+								<Col span={20}>
+									<Input type="text" name="args" value={this.state.args} onChange={this.handleChange}/>
+                            	</Col>
+                            	<Col span={2} offset={1}>
+		                            <Tooltip placement="right" title={'PostgreSQL地址及查询信息, 如 postgresql://localhost:5432/DATABASE_NAME&USER_NAME&PASS_WORD&SELECT * FROM xxx WHERE userId = ?'}>
+		                            	<Icon style={{fontSize:16}} type="question-circle-o" />
+		                            </Tooltip>
+                            	</Col>
+                            </Row>
+	                    </FormItem>
+	                    <FormItem required={true} {...formItemLayout} label="请求信息" style={plugin=='MUTI_DATA'?{}:{display:"none"}} help={validate.args.help} validateStatus={validate.args.status}>
                            <Row>
 								<Col span={20}>
 								      <Radio.Group name="reqType" onChange={this.handleChange} value={this.state.reqType}>

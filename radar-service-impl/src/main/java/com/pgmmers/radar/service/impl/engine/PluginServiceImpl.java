@@ -6,6 +6,7 @@ import com.pgmmers.radar.enums.CombineType;
 import com.pgmmers.radar.service.data.MobileInfoService;
 import com.pgmmers.radar.service.engine.PluginService;
 import com.pgmmers.radar.service.engine.vo.Location;
+import com.pgmmers.radar.service.impl.dnn.TensorDnnEstimator;
 import com.pgmmers.radar.vo.data.MobileInfoVO;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -23,8 +24,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
+import java.sql.*;
 import java.util.Calendar;
 import java.util.List;
+
 
 @Service
 @ConditionalOnProperty(prefix = "sys.conf",name="app", havingValue = "engine")
@@ -137,6 +140,19 @@ public class PluginServiceImpl implements PluginService {
     }
 
     @Override
+    public String pgGet(String quest) {
+        String[] strArr = quest.split("&");
+        Connection connection = PostgreSQLUtils.getConnection(strArr[1].trim(),strArr[2].trim(),strArr[3].trim());
+        String pgStr = null;
+        try{
+            pgStr = PostgreSQLUtils.search(strArr[4].trim());
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return pgStr;
+    }
+
+    @Override
     public JSONObject httpRequest(String url, String reqType, String... args) {
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<String> entity = new HttpEntity<>(headers);
@@ -148,4 +164,86 @@ public class PluginServiceImpl implements PluginService {
         return null;
     }
 
+}
+
+
+class PostgreSQLUtils {
+
+
+    private static Connection c = null; 				// 连接对象
+//    private static PreparedStatement stmt = null;       // sql语句预编译
+    private static Statement stmt = null;               // sql语句执行
+
+
+    /**
+     * 获取连接
+     * @return
+     */
+    public static Connection getConnection(String addr, String user, String psw) {
+        try {
+            Class.forName("org.postgresql.Driver");
+        } catch (ClassNotFoundException e1) {
+            e1.printStackTrace();
+        }
+        try {
+            c = DriverManager.getConnection("jdbc:"+addr, user, psw);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return c;
+    }
+
+    public static void closeConnection() {
+        try {
+            stmt.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        try {
+            c.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 查询操作
+     * @param sql
+     * @return
+     */
+    public static String search(String sql) throws SQLException {
+//		Connection connection = PostgreSQLUtils.getConnection();
+//		String sql = "SELECT * from test where ID=2;";
+//		PostgreSQLUtils.search(sql);
+
+        ResultSet rs = null;
+        String rsStr = null;
+        String column_name = null;
+        String lowSql = sql.toLowerCase();
+        if (lowSql.contains("select") && lowSql.contains("from")) {
+            column_name = sql.substring(6, lowSql.indexOf("from")).trim(); // 截取SELECT至FROM间的字段并去掉前后空格，目前默认为一个列名，不识别*或多列
+        }
+
+        try {
+//            stmt = c.prepareStatement(sql);
+//            stmt.setInt(1, Integer.parseInt(quest));  // setString
+//            rs = stmt.executeQuery();
+            stmt = c.createStatement();
+            rs = stmt.executeQuery(sql);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        while (rs.next()) {
+            rsStr = rs.getString(column_name); // 暂不支持批量读取行或列
+        }
+        closeConnection();
+        return rsStr;
+    }
+    /*
+    public static void main(String[] args) throws SQLException {
+        Connection conn = PostgreSQLUtils.getConnection();
+        String str = PostgreSQLUtils.search("100002");
+        System.out.println(str);
+    }
+    */
 }

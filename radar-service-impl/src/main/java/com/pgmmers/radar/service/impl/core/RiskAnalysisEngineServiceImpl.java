@@ -141,11 +141,11 @@ public class RiskAnalysisEngineServiceImpl implements RiskAnalysisEngineService 
      */
     private void sendResult(String modelGuid, String reqId, String info) {
         // 这里可以根据情况进行异步处理。
-        send2ES(modelGuid, info);
+        send2ES(modelGuid, reqId, info);
     }
 
-    private void send2ES(String guid, String json) {
-        String url = elasticsearchUrl + "/" + guid.toLowerCase() + "/" + "radar";
+    private void send2ES(String guid, String reqId, String json) {
+        String url = elasticsearchUrl + "/" + guid.toLowerCase() + "/" + "radar" + "/" + reqId; // index:guid, type:radar, id:reqId
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> requestEntity = new HttpEntity<>(json, headers);
@@ -153,6 +153,16 @@ public class RiskAnalysisEngineServiceImpl implements RiskAnalysisEngineService 
         ResponseEntity<String> result = restTemplate.postForEntity(url, requestEntity, String.class, new Object[]{});
         logger.info("es result:{}", result);
     }
+
+//    private void send2mongo(String guid, String reqId, String json) {
+//        String url = mongourl + "/" + guid.toLowerCase() + "/" + "radar" + "/" + reqId; // index:guid, type:radar, id:reqId
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.APPLICATION_JSON);
+//        HttpEntity<String> requestEntity = new HttpEntity<>(json, headers);
+//
+//        ResponseEntity<String> result = restTemplate.postForEntity(url, requestEntity, String.class, new Object[]{});
+//        logger.info("es result:{}", result);
+//    }
 
 
 }

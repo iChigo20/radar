@@ -2,7 +2,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/radar?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT%2B8&useSSL=false
     username: root
-    password: 456132
+    password: root
     driver-class-name: com.mysql.jdbc.Driver
     type: com.alibaba.druid.pool.DruidDataSource
     druid:
@@ -50,10 +50,10 @@ mongodb:
   url: mongodb://localhost:27017/radar
 mobile:
   info:
-    path: D:/soft/moble_info.csv #手机号码归属地文件
+    path: D:\Project\idea\radar-develop/resources/moble_info.csv #手机号码归属地文件
 ip2region:
   db:
-    path: D:/soft/ip2region.db #IP地址库文件
+    path: D:\Project\idea\radar-develop/resources/ip2region.db #IP地址库文件
 elasticsearch:
   ip: localhost
   port: 9300
